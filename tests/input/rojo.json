@@ -1,0 +1,86 @@
+{
+     "name": "test-project@0.1.0",
+     "globIgnorePaths": [
+          "**/package.json",
+          "**/tsconfig.json"
+     ],
+	"num_test": [1, 2,3, 4],
+	"bool_test": true,
+     "tree": {
+          "$className": "DataModel",
+          "ReplicatedFirst": {
+               "$className": "ReplicatedFirst",
+               "First": {
+                    "$className": "Folder",
+                    "$path": "src/First",
+                    "Boot": {
+                         "$path": "out/First/Boot"
+                    }
+               },
+			"Packages": {
+                    "$className": "Folder",
+                    "$path": "Packages"
+               }
+          },
+          "ReplicatedStorage": {
+               "$className": "ReplicatedStorage",
+               "Packages": {
+                    "$className": "Folder",
+                    "$path": "Packages"
+               },
+               "Asphalt": {
+                    "$className": "Folder",
+                    "$path": "asphalt/ReplicatedStorage"
+               },
+               "Shared": {
+                    "$className": "Folder",
+                    "$path": "src/Shared",
+                    "Asphalt": {
+                         "$path": "out/Shared/Asphalt"
+                    },
+                    "PseudoEnum": {
+                         "$path": "out/Shared/PseudoEnum.luau"
+                    },
+                    "Scene": {
+                         "$path": "out/Shared/Scene.luau"
+                    },
+                    "Version": {
+                         "$path": "out/Shared/Version.luau"
+                    }
+               },
+               "Client": {
+                    "$className": "Folder",
+                    "$path": "src/Client",
+                    "StyleGuide": {
+                         "$path": "out/Client/StyleGuide"
+                    }
+               }
+          },
+          "MaterialService": {
+               "$className": "MaterialService",
+               "$path": "asphalt/MaterialService"
+          },
+          "SoundService": {
+               "$className": "SoundService",
+               "$path": "asphalt/SoundService"
+          },
+          "ServerScriptService": {
+               "$className": "ServerScriptService",
+               "Server": {
+                    "$className": "Folder",
+                    "$path": "src/Server",
+                    "Boot": {
+                         "$path": "out/Server/Boot"
+                    }
+               }
+          },
+          "StarterPlayer": {
+               "$className": "StarterPlayer",
+               "StarterPlayerScripts": {
+                    "Boot": {
+                         "$path": "out/Client/Boot"
+                    }
+               }
+          }
+     }
+}

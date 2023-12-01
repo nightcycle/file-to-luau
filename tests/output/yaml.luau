@@ -1,0 +1,66 @@
+return {
+	build = {
+		client_boot_script_path = "out/Client/Analytics.client.luau",
+		midas_py_module_out_path = "src/data/download",
+		server_boot_script_path = "out/Server/Analytics.server.luau",
+		shared_state_tree_path = "out/Shared/MidasTree.luau",
+	},
+	encoding_marker = "~",
+	playfab = {
+		download_start_date = DateTime.fromUniversalTime(1970, 1, 1, 0, 0, 0, 0 / 1000000),
+		download_window = 30,
+		user_limit = 10000000,
+	},
+	products = {
+		developer_products = {},
+		gamepasses = {},
+	},
+	recorder = {
+		id = {
+			group_id = 67890,
+			place_id = 12345,
+		},
+		interval = 60,
+		out_path = "src/data/record",
+	},
+	state_tree = {
+		Duration = "integer",
+		Id = {
+			Place = "string",
+			Session = "string",
+			User = "string",
+		},
+		Index = {
+			Event = "integer",
+			Total = "integer",
+		},
+		IsStudio = "boolean",
+		Version = {
+			Build = "integer",
+			Major = "integer",
+			Minor = "integer",
+			Patch = "integer",
+		},
+	},
+	templates = {
+		character = false,
+		chat = false,
+		client_performance = false,
+		demographics = false,
+		exit = false,
+		group = {
+			Nightcycle = 4181328,
+		},
+		join = false,
+		market = false,
+		player = false,
+		population = false,
+		server_performance = false,
+	},
+	version = {
+		hotfix = 0,
+		major = 1,
+		minor = 1,
+		patch = 5,
+	},
+}
