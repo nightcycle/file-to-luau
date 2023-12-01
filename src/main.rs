@@ -1,6 +1,7 @@
 mod json_to_luau;
 mod toml_to_luau;
 mod yaml_to_luau;
+mod csv_to_luau;
 
 use clap::Parser;
 use stylua_lib::{self, Config, OutputVerification, LineEndings, IndentType, QuoteStyle, CallParenType, CollapseSimpleStatement, SortRequiresConfig};
@@ -9,13 +10,14 @@ use stylua_lib::{self, Config, OutputVerification, LineEndings, IndentType, Quot
 #[command(author, version, about, long_about = None)]
 
 struct Args {
-    /// Path to input file
-    #[arg(short, long)]
-    input: std::path::PathBuf,
+	/// Path to input file
+	#[arg(short, long)]
+	input: std::path::PathBuf,
 
-    /// Path to output file
-    #[arg(short, long)]
-    out: std::path::PathBuf,
+	/// Path to output file
+	#[arg(short, long)]
+	out: std::path::PathBuf,
+
 }
 
 fn format_code(code: String) -> String{
@@ -65,6 +67,9 @@ fn main() {
 		},
 		"yaml" => {
 			format_code(format!("return {}", yaml_to_luau::translate(&content)))
+		},
+		"csv" => {
+			format_code(format!("return {}", csv_to_luau::translate(&content)))
 		},
 		_ => {
 			String::from("return nil")

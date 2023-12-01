@@ -46,7 +46,5 @@ fn toml_to_luau(toml: &Value) -> String {
 }
 
 pub fn translate(content: &str) -> String{
-	let toml: Value = toml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse toml");
-
-	return toml_to_luau(&toml)
+	return toml_to_luau(&toml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse toml"))
 }

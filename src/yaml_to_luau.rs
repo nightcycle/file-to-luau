@@ -78,7 +78,5 @@ fn yaml_to_luau(yaml: &Value) -> String {
 }
 
 pub fn translate(content: &str) -> String{
-	let toml: Value = serde_yaml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse yaml");
-
-	return yaml_to_luau(&toml)
+	return yaml_to_luau(&serde_yaml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse yaml"))
 }

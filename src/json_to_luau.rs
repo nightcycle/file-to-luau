@@ -36,6 +36,5 @@ fn json_to_luau(json: &Value) -> String {
 }
 
 pub fn translate(content: &str) -> String{
-	let val: Value = serde_json::from_str(content).map_err(|e| e.to_string()).expect("can't parse json");
-	return json_to_luau(&val)
+	return json_to_luau(&serde_json::from_str(content).map_err(|e| e.to_string()).expect("can't parse json"))
 }
