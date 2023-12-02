@@ -114,7 +114,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
           asset_path: release.zip
           asset_name: ${{ matrix.artifact-name }}.zip
           asset_content_type: application/zip
@@ -126,7 +126,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
           asset_path: release.zip
           asset_name: ${{ matrix.artifact-alias }}.zip
           asset_content_type: application/zip
