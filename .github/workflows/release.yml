@@ -64,7 +64,7 @@ jobs:
           sudo apt install ${{ matrix.linker }}
 
       - name: Build Binary
-        run: cargo build --verbose --locked --release --target ${{ matrix.cargo-target }}
+        run: cargo build --verbose --release --target ${{ matrix.cargo-target }}
         env:
           CARGO_TARGET_DIR: output
 
