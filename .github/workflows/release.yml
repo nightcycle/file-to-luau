@@ -6,24 +6,44 @@ on:
   workflow_dispatch:
 
 jobs:
-  create-release:
-    name: Create Release
+  get_published_release:
     runs-on: ubuntu-latest
+
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.release_info.outputs.release_id }}
+      upload_url: ${{ steps.release_info.outputs.upload_url }}
+      tag_name: ${{ steps.release_info.outputs.tag_name }}
+      repo_desc: ${{ steps.release_info.outputs.repo_desc }}
+      repo_name: ${{ steps.release_info.outputs.repo_name }}
+      repo_owner_name: ${{ steps.release_info.outputs.repo_owner_name }}
     steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: true
+      - name: Set Release Info
+        id: release_info
+        run: |
+          echo "::set-output name=tag_name::${{ github.event.release.tag_name }}"
+          echo "::set-output name=release_id::${{ github.event.release.id }}"
+          echo "::set-output name=upload_url::${{ github.event.release.upload_url }}"
+
+          repo_owner_name=${{ github.repository_owner }}
+          echo "::set-output name=repo_owner_name::$repo_owner_name"
+
+          repo_name=${{ github.repository }}
+          forward_repo_pattern="${repo_owner_name}/"
+          empty_str=""
+          repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
+          echo "::set-output name=repo_name::$repo_name"
+
+          # Use the GitHub API to fetch the repository description            
+          description_prefix="\"description\":"
+          curl -L "https://api.github.com/repos/${repo_owner_name}/${repo_name}" > "desc.text"
+          desc=$(<desc.text)
+          desc=$(echo "$desc" | grep -F "$description_prefix")
+          desc="${desc/${description_prefix}/${empty_str}}"
+          repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
+          echo "::set-output name=repo_desc::$repo_desc"
 
   release:
-    needs: ["create-release"]
+    needs: ["get_published_release"]
     strategy:
       matrix:
         include:
@@ -57,11 +77,11 @@ jobs:
         with:
           target: ${{ matrix.cargo-target }}
 
-      - name: Install Linker packages
-        if: ${{ matrix.linker != '' }}
-        run: |
-          sudo apt update
-          sudo apt install ${{ matrix.linker }}
+     #  - name: Install Linker packages
+     #    if: ${{ matrix.linker != '' }}
+     #    run: |
+     #      sudo apt update
+     #      sudo apt install ${{ matrix.linker }}
 
       - name: Build Binary
         run: cargo build --verbose --release --target ${{ matrix.cargo-target }}
