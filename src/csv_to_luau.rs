@@ -3,8 +3,8 @@ use serde_json::json;
 use std::error::Error;
 use crate::json_to_luau;
 
-fn convert_csv_to_json(csv_data: &str) -> Result<String, Box<dyn Error>> {
-	let mut reader = ReaderBuilder::new()
+fn convert_to_json(csv_data: &str, delimiter: u8) -> Result<String, Box<dyn Error>> {
+	let mut reader = ReaderBuilder::new().delimiter(delimiter)
 		.from_reader(csv_data.as_bytes());
 
 	let headers = reader.headers().expect("bad headers").clone();
@@ -39,8 +39,6 @@ fn convert_csv_to_json(csv_data: &str) -> Result<String, Box<dyn Error>> {
 				);
 			}
 
-			
-
 			acc_obj.into()
 		});
 		
@@ -50,6 +48,6 @@ fn convert_csv_to_json(csv_data: &str) -> Result<String, Box<dyn Error>> {
 	Ok(serde_json::to_string(&json_array)?)
 }
 
-pub fn translate(content: &str) -> String{
-	return json_to_luau::translate(&convert_csv_to_json(content).expect("bad csv"))
+pub fn translate(content: &str, delimiter: u8) -> String{
+	return json_to_luau::translate(&convert_to_json(content, delimiter).expect("bad sv file"))
 }

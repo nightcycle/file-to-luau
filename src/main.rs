@@ -2,6 +2,7 @@ mod json_to_luau;
 mod toml_to_luau;
 mod yaml_to_luau;
 mod csv_to_luau;
+mod xlsx_to_luau;
 
 use clap::Parser;
 use stylua_lib::{self, Config, OutputVerification, LineEndings, IndentType, QuoteStyle, CallParenType, CollapseSimpleStatement, SortRequiresConfig};
@@ -18,6 +19,9 @@ struct Args {
 	#[arg(short, long)]
 	out: std::path::PathBuf,
 
+	/// Optional spreadsheet page name
+	#[clap(short, long)]
+	page: Option<String>,
 }
 
 fn format_code(code: String) -> String{
@@ -52,29 +56,38 @@ fn format_code(code: String) -> String{
 
 fn main() {
 	let args: Args = Args::parse();
-	let content: String = std::fs::read_to_string(&args.input).expect("could not read file");
-
 	let ext: &str = args.input.extension().expect("bad extension").to_str().expect("extension is not string");
-	let luau_content: String = match ext {
-		"txt" => {
-			format!("\nreturn `{}`", content)
-		},
-		"json" => {
-			format_code(format!("return {}", json_to_luau::translate(&content)))
-		},
-		"toml" => {
-			format_code(format!("return {}", toml_to_luau::translate(&content)))
-		},
-		"yaml" => {
-			format_code(format!("return {}", yaml_to_luau::translate(&content)))
-		},
-		"csv" => {
-			format_code(format!("return {}", csv_to_luau::translate(&content)))
-		},
-		_ => {
-			String::from("return nil")
-		}
-	};
+
+	let luau_content: String;
+	if ext != "xlsx" {
+		let content: String = std::fs::read_to_string(&args.input).expect("could not read file");
+		luau_content = match ext {
+			"txt" => {
+				format!("\nreturn `{}`", content)
+			},
+			"json" => {
+				format_code(format!("return {}", json_to_luau::translate(&content)))
+			},
+			"toml" => {
+				format_code(format!("return {}", toml_to_luau::translate(&content)))
+			},
+			"yaml" => {
+				format_code(format!("return {}", yaml_to_luau::translate(&content)))
+			},
+			"csv" => {
+				format_code(format!("return {}", csv_to_luau::translate(&content, b',')))
+			},
+			"tsv" => {
+				format_code(format!("return {}", csv_to_luau::translate(&content, b'\t')))
+			},
+			_ => {
+				String::from("return nil")
+			}
+		};
+	}else{
+		luau_content = format_code(format!("return {}", xlsx_to_luau::translate(&args.input.to_str().expect("bad path"), &args.page)));
+	}
+	
 
 	std::fs::write(args.out, luau_content).expect("write failed");
 }
