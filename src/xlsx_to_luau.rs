@@ -39,8 +39,8 @@ pub fn xlsx_to_csv(file_path: &str, specified_page: &Option<String>) -> Result<S
 	return Ok(csv_content.join("\n"))
 }
 
-pub fn translate(file_path: &str, specified_page: &Option<String>) -> String {
+pub fn translate(file_path: &str, specified_page: &Option<String>, key: &Option<String>) -> String {
     let res = xlsx_to_csv(file_path, specified_page);
     let csv_content: String = res.expect("bad xlsx");
-    csv_to_luau::translate(&csv_content, b',')
+    csv_to_luau::translate(&csv_content, b',', key)
 }

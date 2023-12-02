@@ -22,6 +22,10 @@ struct Args {
 	/// Optional spreadsheet page name
 	#[clap(short, long)]
 	page: Option<String>,
+
+	/// Optional key to organize table records with
+	#[clap(short, long)]
+	key: Option<String>,
 }
 
 fn format_code(code: String) -> String{
@@ -75,17 +79,17 @@ fn main() {
 				format_code(format!("return {}", yaml_to_luau::translate(&content)))
 			},
 			"csv" => {
-				format_code(format!("return {}", csv_to_luau::translate(&content, b',')))
+				format_code(format!("return {}", csv_to_luau::translate(&content, b',', &args.key)))
 			},
 			"tsv" => {
-				format_code(format!("return {}", csv_to_luau::translate(&content, b'\t')))
+				format_code(format!("return {}", csv_to_luau::translate(&content, b'\t', &args.key)))
 			},
 			_ => {
 				String::from("return nil")
 			}
 		};
 	}else{
-		luau_content = format_code(format!("return {}", xlsx_to_luau::translate(&args.input.to_str().expect("bad path"), &args.page)));
+		luau_content = format_code(format!("return {}", xlsx_to_luau::translate(&args.input.to_str().expect("bad path"), &args.page, &args.key)));
 	}
 	
 

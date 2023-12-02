@@ -3,7 +3,7 @@ use serde_json::json;
 use std::error::Error;
 use crate::json_to_luau;
 
-fn convert_to_json(csv_data: &str, delimiter: u8) -> Result<String, Box<dyn Error>> {
+fn convert_to_json(csv_data: &str, delimiter: u8, key: &Option<String>) -> Result<String, Box<dyn Error>> {
 	let mut reader = ReaderBuilder::new().delimiter(delimiter)
 		.from_reader(csv_data.as_bytes());
 
@@ -43,11 +43,28 @@ fn convert_to_json(csv_data: &str, delimiter: u8) -> Result<String, Box<dyn Erro
 		});
 		
 		json_array.push(json_object);
-	 }
+	}
 
-	Ok(serde_json::to_string(&json_array)?)
+	match key {
+		Some(k) => {
+			// Create a HashMap to store the converted data
+			let mut output_data = serde_json::Map::new();
+
+			for item in json_array {
+				if let Some(key) = item[k].as_str() {
+					// Clone the item and insert it into the output_data with key as the key
+					output_data.insert(key.to_string(), item.clone());
+				}
+			}
+
+			// Serialize the output_data back to JSON
+			Ok(serde_json::to_string(&output_data)?)
+		},
+		None => Ok(serde_json::to_string(&json_array)?)
+	}
+
 }
 
-pub fn translate(content: &str, delimiter: u8) -> String{
-	return json_to_luau::translate(&convert_to_json(content, delimiter).expect("bad sv file"))
+pub fn translate(content: &str, delimiter: u8, key: &Option<String>) -> String{
+	return json_to_luau::translate(&convert_to_json(content, delimiter, key).expect("bad sv file"))
 }
