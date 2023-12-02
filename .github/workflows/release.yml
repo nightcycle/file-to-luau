@@ -1,9 +1,8 @@
 name: Release
 # originally from https://github.com/JohnnyMorganz/StyLua/blob/5de9a1da8a8dc628b98240e12ffe24c7fdbbea6e/src/editorconfig.rs
 on:
-  push:
-    tags: ["*"]
-  workflow_dispatch:
+  release:
+    types: [published]
 
 jobs:
   get_published_release:
@@ -16,6 +15,7 @@ jobs:
       repo_desc: ${{ steps.release_info.outputs.repo_desc }}
       repo_name: ${{ steps.release_info.outputs.repo_name }}
       repo_owner_name: ${{ steps.release_info.outputs.repo_owner_name }}
+
     steps:
       - name: Set Release Info
         id: release_info
