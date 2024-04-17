@@ -13,12 +13,12 @@ file-to-luau = {source="nightcycle/file-to-luau", version="1.0.0"}
 file-to-luau --input "path/to/input.ext" --out "path/to/output.luau"
 ```
 ## optional arguments
-### key
+##### key
 For table formats such as csv, tsv, and xlsx, you can choose to use a value from them as a key to a dictionary. Otherwise it will create it as an array of rows.
 ```
 file-to-luau --input tests/input/infrastruct.xlsx --out tests/output/id-xlsx.luau --key Id
 ```
-### page
+##### page
 For an xlsx you can specify the specific page it will export, otherwise it will just choose the first one.
 ```
 cargo run -- --input tests/input/infrastruct.xlsx --out tests/output/page-xlsx.luau --page City
@@ -29,12 +29,12 @@ cargo run -- --input tests/input/infrastruct.xlsx --out tests/output/page-xlsx.l
 ```sh
 file-to-luau --input tests/input/hello.txt --out tests/output/txt.luau
 ```
-### input
+##### input
 ```txt
 hello world
 ```
 
-### output
+##### output
 ```lua
 return `hello world`
 ```
@@ -43,13 +43,13 @@ return `hello world`
 ```sh
 file-to-luau --input tests/input/vehicle.csv --out tests/output/csv.luau
 ```
-### input
+##### input
 ```csv
 Id,Vehicle Compatibility,Name,Manufacturer,Model,Description,Max Speed,Max Speed Car Count,Fuel Cost Per Kilowatt,Air Pressure,Base Engine Weight,Base Car Weight,Max Car Cargo Weight,Car Cargo Volume,Car Passenger Limit,Friction Coefficient,Drag Coefficient,Lifespan,Construction Cost,Maintenance Cost
 Rail_Callisto,Rail,Callisto,Lafayette Locomotive Works,No. 119,"The Callisto is classic American steam locomotive, using immense mechanical forces to slowly pull massive amounts of cargo across the nation.",50 kph,16,$0.03,1.00atm,50T,25T,100T,75m^3,0,0.00350,0.80,30yr,"$1,000K",$33K
 Rail_Denver,Rail,Denver,Monarch,E7-F,The Denver is an iconic American streamliner locomotive known for providing decades of reliable service.,70 kph,30,$0.27,1.00atm,100T,25T,100T,75m^3,0,0.00350,0.95,40yr,"$2,000K",$50K
 ```
-### output
+##### output
 ```lua
 return {
 	{
@@ -103,7 +103,7 @@ return {
 ```sh
 file-to-luau --input tests/input/rojo.json --out tests/output/json.luau
 ```
-### input
+##### input
 ```json
 {
      "name": "test-project@0.1.0",
@@ -192,7 +192,7 @@ file-to-luau --input tests/input/rojo.json --out tests/output/json.luau
      }
 }
 ```
-### output
+##### output
 ```lua
 return {
 	["bool_test"] = true,
@@ -291,7 +291,7 @@ return {
 ```sh
 file-to-luau --input tests/input/pseudo-enum.toml --out tests/output/toml.luau
 ```
-### input
+##### input
 ```toml
 build_path = "out/Shared/PseudoEnum.luau"
 use_union_types_for_tree = false
@@ -336,7 +336,7 @@ AnalyticsMapArea = [
 	"Other",
 ]
 ```
-### output
+##### output
 ```lua
 return {
 	build_path = "out/Shared/PseudoEnum.luau",
@@ -399,11 +399,11 @@ return {
 ```sh
 file-to-luau --input tests/input/infrastruct.xlsx --out tests/output/page-xlsx.luau --key Id
 ```
-### input
+##### input
 ```
 binary nonsense
 ```
-### output
+##### output
 ```lua
 return {
 	["HighSpeedRail_Pacifique"] = {
@@ -542,7 +542,7 @@ return {
 ```
 
 ## yaml
-### input
+##### input
 ```yaml
 build:
   client_boot_script_path: out/Client/Analytics.client.luau
@@ -598,7 +598,7 @@ version:
   minor: 1
   patch: 5
 ```
-### output
+##### output
 ```lua
 return {
 	build = {
