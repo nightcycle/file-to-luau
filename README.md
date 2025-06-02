@@ -8,7 +8,7 @@ Using [foreman](https://github.com/Roblox/foreman) add this tool. Replace the ve
 
 ```toml
 [tools]
-file-to-luau = {source="nightcycle/file-to-luau", version="1.0.0"}
+file-to-luau = {source="nightcycle/file-to-luau", version="2.0.0"}
 ```
 
 ## using
