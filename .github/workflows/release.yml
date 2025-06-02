@@ -69,7 +69,7 @@ jobs:
         shell: bash
         run: |
           echo "=== Checking build output structure ==="
-          find output -type f -name "*file*" || echo "No files with 'file' in name found"
+          find output -type f -name "*file_to_luau*" || echo "No files with 'file_to_luau' in name found"
           echo ""
           echo "=== Full output directory structure ==="
           find output -type f || echo "No files found in output directory"
