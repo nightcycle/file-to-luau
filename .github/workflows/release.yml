@@ -1,5 +1,4 @@
 name: Release
-# originally from https://github.com/JohnnyMorganz/StyLua/blob/5de9a1da8a8dc628b98240e12ffe24c7fdbbea6e/src/editorconfig.rs
 on:
   release:
     types: [published]
@@ -12,38 +11,33 @@ jobs:
       release_id: ${{ steps.release_info.outputs.release_id }}
       upload_url: ${{ steps.release_info.outputs.upload_url }}
       tag_name: ${{ steps.release_info.outputs.tag_name }}
-      repo_desc: ${{ steps.release_info.outputs.repo_desc }}
       repo_name: ${{ steps.release_info.outputs.repo_name }}
       repo_owner_name: ${{ steps.release_info.outputs.repo_owner_name }}
 
+    env:
+      GITHUB_RBXL_UNPACK_ACCESS_TOKEN: ${{ secrets.RELEASE_TOKEN }}
     steps:
       - name: Set Release Info
         id: release_info
         run: |
-          echo "::set-output name=tag_name::${{ github.event.release.tag_name }}"
-          echo "::set-output name=release_id::${{ github.event.release.id }}"
-          echo "::set-output name=upload_url::${{ github.event.release.upload_url }}"
+          echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          echo "release_id=${{ github.event.release.id }}" >> $GITHUB_OUTPUT
+          echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
 
           repo_owner_name=${{ github.repository_owner }}
-          echo "::set-output name=repo_owner_name::$repo_owner_name"
+          echo "repo_owner_name=$repo_owner_name" >> $GITHUB_OUTPUT
 
           repo_name=${{ github.repository }}
           forward_repo_pattern="${repo_owner_name}/"
           empty_str=""
           repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
-          echo "::set-output name=repo_name::$repo_name"
-
-          # Use the GitHub API to fetch the repository description            
-          description_prefix="\"description\":"
-          curl -L "https://api.github.com/repos/${repo_owner_name}/${repo_name}" > "desc.text"
-          desc=$(<desc.text)
-          desc=$(echo "$desc" | grep -F "$description_prefix")
-          desc="${desc/${description_prefix}/${empty_str}}"
-          repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
-          echo "::set-output name=repo_desc::$repo_desc"
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
   release:
     needs: ["get_published_release"]
+    permissions:
+      contents: write
+      packages: write
     strategy:
       matrix:
         include:
@@ -51,21 +45,10 @@ jobs:
             artifact-name: file-to-luau-windows-x86_64
             artifact-alias: file-to-luau-win64
             cargo-target: x86_64-pc-windows-msvc
-          # - os: ubuntu-20.04
-          #   artifact-name: file-to-luau-linux-x86_64
-          #   artifact-alias: file-to-luau-linux
-          #   cargo-target: x86_64-unknown-linux-gnu
-          # - os: ubuntu-20.04
-          #   artifact-name: file-to-luau-linux-aarch64
-          #   cargo-target: aarch64-unknown-linux-gnu
-          #   linker: gcc-aarch64-linux-gnu
-          # - os: macos-latest
-          #   artifact-name: file-to-luau-macos-x86_64
-          #   artifact-alias: file-to-luau-macos
-          #   cargo-target: x86_64-apple-darwin
-          # - os: macos-latest
-          #   artifact-name: file-to-luau-macos-aarch64
-          #   cargo-target: aarch64-apple-darwin
+          - os: ubuntu-latest
+            artifact-name: file-to-luau-linux-x86_64
+            artifact-alias: file-to-luau-linux
+            cargo-target: x86_64-unknown-linux-gnu
 
     name: Build (${{ matrix.artifact-name }})
     runs-on: ${{ matrix.os }}
@@ -77,56 +60,71 @@ jobs:
         with:
           target: ${{ matrix.cargo-target }}
 
-     #  - name: Install Linker packages
-     #    if: ${{ matrix.linker != '' }}
-     #    run: |
-     #      sudo apt update
-     #      sudo apt install ${{ matrix.linker }}
-
       - name: Build Binary
-        run: cargo build --verbose --release --target ${{ matrix.cargo-target }}
+        run: cargo build --release --target ${{ matrix.cargo-target }}
         env:
           CARGO_TARGET_DIR: output
+
+      - name: Debug - List Build Output
+        shell: bash
+        run: |
+          echo "=== Checking build output structure ==="
+          find output -type f -name "*file*" || echo "No files with 'file' in name found"
+          echo ""
+          echo "=== Full output directory structure ==="
+          find output -type f || echo "No files found in output directory"
+          echo ""
+          echo "=== Checking expected path specifically ==="
+          ls -la "output/${{ matrix.cargo-target }}/release/" || echo "Release directory doesn't exist"
 
       - name: Setup Archive + Extension
         shell: bash
         run: |
           mkdir -p staging
 
+          # Set binary name based on OS
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            cp "output/${{ matrix.cargo-target }}/release/file_to_luau.exe" staging/
-            cd staging
-            7z a ../release.zip *
+            binary_name="file-to-luau.exe"
           else
-            cp "output/${{ matrix.cargo-target }}/release/file-to-luau" staging/
-            cd staging
-            zip ../release.zip *
+            binary_name="file-to-luau"
+          fi
+
+          binary_path="output/${{ matrix.cargo-target }}/release/$binary_name"
+
+          echo "Looking for binary at: $binary_path"
+
+          # Check if the binary exists
+          if [ ! -f "$binary_path" ]; then
+            echo "ERROR: Binary not found at expected path: $binary_path"
+            echo "Available files in release directory:"
+            ls -la "output/${{ matrix.cargo-target }}/release/" || echo "Release directory doesn't exist"
+            exit 1
+          fi
+
+          # Copy the binary
+          cp "$binary_path" staging/
+
+          # Create archive
+          cd staging
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a ../${{ matrix.artifact-alias }}.zip *
+          else
+            zip ../${{ matrix.artifact-alias }}.zip *
           fi
 
       - name: Upload Binary Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-          path: release.zip
+          path: ${{ matrix.artifact-alias }}.zip
 
       - name: Upload Binary to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
-          asset_path: release.zip
-          asset_name: ${{ matrix.artifact-name }}.zip
-          asset_content_type: application/zip
-
-      # TODO: Remove this after deprecation notice
-      - name: Upload Binary to Release aliases
-        if: ${{ matrix.artifact-alias != '' }}
-        uses: actions/upload-release-asset@v1
+          tag_name: ${{ needs.get_published_release.outputs.tag_name }}
+          files: ${{ matrix.artifact-alias }}.zip
+          make_latest: false
+          append_body: false
+          generate_release_notes: false
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
-          asset_path: release.zip
-          asset_name: ${{ matrix.artifact-alias }}.zip
-          asset_content_type: application/zip
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}

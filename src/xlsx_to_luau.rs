@@ -9,16 +9,14 @@ pub fn xlsx_to_csv(file_path: &str, specified_page: &Option<String>) -> Result<S
 		Some(sheet) => sheet,
 		None => panic!("xlsx book is empty: {}", file_path)
 	};
-	
+
 	let sheet_name: &String = match specified_page {
 	    Some(page) => page,
 	    None => &first_sheet
 	};
 	let range = workbook
-	    .worksheet_range(sheet_name)
-	    .ok_or_else(|| format!("No such sheet: {}", sheet_name))?
-	    .map_err(|e| e)?;
- 
+	    .worksheet_range(sheet_name)?;
+
 	let mut csv_content = Vec::new();
 
 	for row in range.rows() {
@@ -32,10 +30,10 @@ pub fn xlsx_to_csv(file_path: &str, specified_page: &Option<String>) -> Result<S
 				cell_str
 			}
 		}).collect::<Vec<_>>().join(",");
-	
+
 		csv_content.push(csv_row);
 	}
- 
+
 	return Ok(csv_content.join("\n"))
 }
 

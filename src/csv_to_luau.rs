@@ -9,39 +9,37 @@ fn convert_to_json(csv_data: &str, delimiter: u8, key: &Option<String>) -> Resul
 
 	let headers = reader.headers().expect("bad headers").clone();
 	let mut json_array = Vec::new();
-	
 	for result in reader.records() {
 		let record = result?;
-		
 		let json_object = headers.iter().zip(record.iter()).fold(json!({}), |acc, (key, value)| {
-			
+
 			let mut acc_obj = acc.as_object().unwrap().clone();
 
 			if let Ok(v) = value.parse::<i64>() {
 				acc_obj.insert(
-					key.to_string(), 
+					key.to_string(),
 					json!(v)
 				);
 			}else if let Ok(v) = value.parse::<f64>() {
 				acc_obj.insert(
-					key.to_string(), 
+					key.to_string(),
 					json!(v)
 				);
 			}else if let Ok(v) = value.parse::<bool>() {
 				acc_obj.insert(
-					key.to_string(), 
+					key.to_string(),
 					json!(v)
 				);
 			}else {
 				acc_obj.insert(
-					key.to_string(), 
+					key.to_string(),
 					json!(value)
 				);
 			}
 
 			acc_obj.into()
 		});
-		
+
 		json_array.push(json_object);
 	}
 

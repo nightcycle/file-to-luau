@@ -1,6 +1,4 @@
 mod json_to_luau;
-mod toml_to_luau;
-mod yaml_to_luau;
 mod csv_to_luau;
 mod xlsx_to_luau;
 
@@ -17,7 +15,7 @@ struct Args {
 
 	/// Path to output file
 	#[arg(short, long)]
-	out: std::path::PathBuf,
+	output: std::path::PathBuf,
 
 	/// Optional spreadsheet page name
 	#[clap(short, long)]
@@ -37,8 +35,10 @@ fn format_code(code: String) -> String{
 			line_endings: LineEndings::Windows,
 			indent_type: IndentType::Tabs,
 			indent_width: 5,
-			quote_style: QuoteStyle::AutoPreferDouble,
+			syntax: stylua_lib::LuaVersion::All,
 			no_call_parentheses: false,
+			quote_style: QuoteStyle::AutoPreferDouble,
+			space_after_function_names: stylua_lib::SpaceAfterFunctionNames::Never,
 			call_parentheses: CallParenType::Always,
 			collapse_simple_statement: CollapseSimpleStatement::ConditionalOnly,
 			sort_requires: SortRequiresConfig::new(),
@@ -47,14 +47,14 @@ fn format_code(code: String) -> String{
 		OutputVerification::Full
 	);
 
-	let fmt_content = match style_result {
-		Ok(out) => out,
-		Err(error) => {
-			panic!("Problem styling code: {}, \n{}", error, code)
-		}
-	};
+	// let fmt_content = match style_result {
+	// 	Ok(out) => out,
+	// 	Err(error) => {
+	// 		panic!("Problem styling code: {}, \n{}", error, code)
+	// 	}
+	// };
 
-	return fmt_content;
+	return style_result.unwrap_or(code);
 	// return code
 }
 
@@ -67,16 +67,19 @@ fn main() {
 		let content: String = std::fs::read_to_string(&args.input).expect("could not read file");
 		luau_content = match ext {
 			"txt" => {
-				format!("\nreturn `{}`", content)
+				format!("\nreturn \"{}\"", content.replace("\"", "\\\"").replace("\n", "\\n").lines().collect::<Vec<&str>>().join("\\n"))
 			},
 			"json" => {
 				format_code(format!("return {}", json_to_luau::translate(&content)))
 			},
 			"toml" => {
-				format_code(format!("return {}", toml_to_luau::translate(&content)))
+				format_code(format!("return {}", json_to_luau::json_to_luau(&toml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse toml"))))
 			},
 			"yaml" => {
-				format_code(format!("return {}", yaml_to_luau::translate(&content)))
+				format_code(format!("return {}", json_to_luau::json_to_luau(&serde_yaml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse yaml"))))
+			},
+			"yml" => {
+				format_code(format!("return {}", json_to_luau::json_to_luau(&serde_yaml::from_str(&content).map_err(|e| e.to_string()).expect("couldn't parse yaml"))))
 			},
 			"csv" => {
 				format_code(format!("return {}", csv_to_luau::translate(&content, b',', &args.key)))
@@ -91,7 +94,7 @@ fn main() {
 	}else{
 		luau_content = format_code(format!("return {}", xlsx_to_luau::translate(&args.input.to_str().expect("bad path"), &args.page, &args.key)));
 	}
-	
 
-	std::fs::write(args.out, luau_content).expect("write failed");
+
+	std::fs::write(args.output, luau_content).expect("write failed");
 }

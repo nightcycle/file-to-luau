@@ -18,11 +18,11 @@ fn array_to_luau(arr: &[Value]) -> String {
     luau_list
 }
 
-fn json_to_luau(json: &Value) -> String {
+pub fn json_to_luau(json: &Value) -> String {
 	match json {
 		Value::Object(map) => object_to_luau(map),
 		Value::Array(arr) => array_to_luau(arr),
-		Value::String(s) => format!("\"{}\"", s),
+		Value::String(s) => format!("\"{}\"", s.replace("\n", "\\n").replace("\"", "\\\"").lines().collect::<Vec<&str>>().join("\\n")),
 		Value::Bool(b) => {
 			format!("{}", b)
 		},
@@ -31,7 +31,7 @@ fn json_to_luau(json: &Value) -> String {
 		},
 		Value::Null => String::from("nil"),
 		// Add cases for other types if needed
-		_ => "".to_string(),
+		// _ => "".to_string(),
 	}
 }
 
